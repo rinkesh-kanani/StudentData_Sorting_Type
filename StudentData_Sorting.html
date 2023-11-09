@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Data</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin-top: 20px; 
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+
+        .arrow-up::after {
+            content: " ▲";
+        }
+
+        .arrow-down::after {
+            content: " ▼";
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr id="header-row">
+            </tr>
+        </thead>
+        <tbody id="data-body">
+        </tbody>
+    </table>
+    <div style="margin: 1%;"></div>
+    
+  
+    <button onclick="displayGPAs()">Display GPAs of Each Student</button>
+    <button onclick="displayAverages()">Display Averages of Each Student</button>
+    <button onclick="displayHighLowMarks()">Display High/Low Marks of Each Student</button>
+    <button onclick="displaySubjectHighLowMarks()">Display High/Low Marks of Each Subject</button>
+    <button onclick="displayFemaleSubjects()">Female Subjects Performance</button>
+    <div style="margin: 1%;"></div>
+    <button onclick="displayMaleSubjects()">Male Subjects Performance</button>
+    
+
+    <div id="result-table"></div>
+
+    <script>
+        const tableHeaders = ["Gender", "Name", "Math", "Geography", "Biology", "English", "Chemistry"];
+        const studentData = [
+            ["Male", "Mark", 72, 94, 74, 78, 70],
+            ["Male", "Leo", 78, 87, 79, 72, 82],
+            ["Female", "Eve", 83, 76, 62, 85, 68],
+            ["Female", "Anne", 88, 79, 68, 90, 73],
+            ["Male", "Nick", 75, 80, 71, 63, 94],
+            ["Male", "Bob", 56, 78, 67, 84, 79],
+            ["Female", "Alice", 91, 84, 85, 77, 72]
+        ];
+
+      
+        const headerRow = document.getElementById("header-row");
+        for (const headerText of tableHeaders) {
+            const th = document.createElement("th");
+            th.textContent = headerText;
+            headerRow.appendChild(th);
+        }
+
+        
+        const dataBody = document.getElementById("data-body");
+        for (const student of studentData) {
+            const row = document.createElement("tr");
+            for (const value of student) {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            }
+            dataBody.appendChild(row);
+        }
+
+        let gpaSortOrder = 1; 
+        let averageSortOrder = 1; 
+
+        function displayGPAs() {
+            const resultTableDiv = document.getElementById("result-table");
+
+            
+            const gpaTable = document.createElement("table");
+            gpaTable.style.borderCollapse = "collapse"; 
+
+            
+            const gpaHeaderRow = document.createElement("tr");
+
+            
+            const gpaHeaderCell = document.createElement("th");
+            gpaHeaderCell.className = "sortable";
+            gpaHeaderCell.innerHTML = `Name GPA <span class="arrow-${gpaSortOrder === 1 ? 'up' : 'down'}"></span>`;
+            gpaHeaderCell.addEventListener("click", toggleGPASort);
+            gpaHeaderRow.appendChild(gpaHeaderCell);
+
+            gpaTable.appendChild(gpaHeaderRow);
+
+          
+            const sortedStudentData = [...studentData];
+            sortedStudentData.sort((a, b) => {
+                const gpaA = calculateGPA(a);
+                const gpaB = calculateGPA(b);
+                return gpaSortOrder * (gpaA - gpaB);
+            });
+
+            for (const student of sortedStudentData) {
+                const name = student[1];
+                const gpa = calculateGPA(student);
+
+                const gpaRow = document.createElement("tr");
+                gpaRow.innerHTML = `<td>${name}</td><td>${gpa.toFixed(2)}</td>`;
+                gpaTable.appendChild(gpaRow);
+            }
+
+            resultTableDiv.innerHTML = "";
+            resultTableDiv.appendChild(gpaTable);
+        }
+
+        function toggleGPASort() {
+            gpaSortOrder *= -1;
+            displayGPAs();
+        }
+
+        function calculateGPA(student) {
+            const totalScore = student.slice(2).reduce((acc, score) => acc + score, 0);
+            return (totalScore / 5) / 100 * 4;
+        }
+
+        function displayAverages() {
+            const resultTableDiv = document.getElementById("result-table");
+
+           
+            const averageTable = document.createElement("table");
+            averageTable.style.borderCollapse = "collapse"; 
+            const averageHeaderRow = document.createElement("tr");
+            const averageHeaderCell = document.createElement("th");
+            averageHeaderCell.className = "sortable";
+            averageHeaderCell.innerHTML = `Name Average <span class="arrow-${averageSortOrder === 1 ? 'up' : 'down'}"></span>`;
+            averageHeaderCell.addEventListener("click", toggleAverageSort);
+            averageHeaderRow.appendChild(averageHeaderCell);
+
+            averageTable.appendChild(averageHeaderRow);
+            const sortedStudentData = [...studentData];
+            sortedStudentData.sort((a, b) => {
+                const averageA = calculateAverage(a);
+                const averageB = calculateAverage(b);
+                return averageSortOrder * (averageA - averageB);
+            });
+
+            for (const student of sortedStudentData) {
+                const name = student[1];
+                const average = calculateAverage(student);
+
+                const averageRow = document.createElement("tr");
+                averageRow.innerHTML = `<td>${name}</td><td>${average.toFixed(2)}</td>`;
+                averageTable.appendChild(averageRow);
+            }
+
+            
+            resultTableDiv.innerHTML = "";
+            resultTableDiv.appendChild(averageTable);
+        }
+
+        function toggleAverageSort() {
+            averageSortOrder *= -1;
+            displayAverages();
+        }
+
+        function calculateAverage(student) {
+            const totalScore = student.slice(2).reduce((acc, score) => acc + score, 0);
+            return totalScore / student.slice(2).length;
+        }
+
+        function displayHighLowMarks() {
+            const resultTableDiv = document.getElementById("result-table");
+
+            const highLowTable = document.createElement("table");
+            highLowTable.style.borderCollapse = "collapse"; 
+            const highLowHeaderRow = document.createElement("tr");
+            highLowHeaderRow.innerHTML = "<th>Name</th><th>High Subject</th><th>High Mark</th><th>Low Subject</th><th>Low Mark</th>";
+            highLowTable.appendChild(highLowHeaderRow);
+            
+            for (const student of studentData) {
+                const name = student[1];
+                const subjects = tableHeaders.slice(2); 
+                let highSubject = subjects[0];
+                let lowSubject = subjects[0];
+                let highMark = student[2];
+                let lowMark = student[2];
+
+                for (let i = 2; i < student.length; i++) {
+                    if (student[i] > highMark) {
+                        highMark = student[i];
+                        highSubject = subjects[i - 2];
+                    }
+                    if (student[i] < lowMark) {
+                        lowMark = student[i];
+                        lowSubject = subjects[i - 2];
+                    }
+                }
+                const highLowRow = document.createElement("tr");
+                highLowRow.innerHTML = `<td>${name}</td><td>${highSubject}</td><td>${highMark}</td><td>${lowSubject}</td><td>${lowMark}</td>`;
+                highLowTable.appendChild(highLowRow);
+            }
+            resultTableDiv.innerHTML = "";
+            resultTableDiv.appendChild(highLowTable);
+        }
+
+        function displaySubjectHighLowMarks() {
+            const resultTableDiv = document.getElementById("result-table");
+            const subjectHighLowTable = document.createElement("table");
+            subjectHighLowTable.style.borderCollapse = "collapse"; 
+            const subjectHighLowHeaderRow = document.createElement("tr");
+            subjectHighLowHeaderRow.innerHTML = "<th>Subject</th><th>High Student</th><th>High Mark</th><th>Low Student</th><th>Low Mark</th>";
+            subjectHighLowTable.appendChild(subjectHighLowHeaderRow);
+            
+            const subjects = tableHeaders.slice(2); 
+            const highMarks = new Array(subjects.length).fill(-1);
+            const lowMarks = new Array(subjects.length).fill(101);
+            const highStudents = new Array(subjects.length).fill("");
+            const lowStudents = new Array(subjects.length).fill("");
+
+           
+            for (const student of studentData) {
+                for (let i = 2; i < student.length; i++) {
+                    if (student[i] > highMarks[i - 2]) {
+                        highMarks[i - 2] = student[i];
+                        highStudents[i - 2] = student[1];
+                    }
+                    if (student[i] < lowMarks[i - 2]) {
+                        lowMarks[i - 2] = student[i];
+                        lowStudents[i - 2] = student[1];
+                    }
+                }
+            }
+
+           
+            for (let i = 0; i < subjects.length; i++) {
+                const subjectHighLowRow = document.createElement("tr");
+                subjectHighLowRow.innerHTML = `<td>${subjects[i]}</td><td>${highStudents[i]}</td><td>${highMarks[i]}</td><td>${lowStudents[i]}</td><td>${lowMarks[i]}</td>`;
+                subjectHighLowTable.appendChild(subjectHighLowRow);
+            }
+
+            resultTableDiv.innerHTML = "";
+            resultTableDiv.appendChild(subjectHighLowTable);
+        }
+
+    function displayFemaleSubjects() {
+
+        const resultTableDiv = document.getElementById("result-table");
+        const maleAverages = new Array(tableHeaders.length - 2).fill(0);
+        const femaleAverages = new Array(tableHeaders.length - 2).fill(0);
+        const maleCounts = new Array(tableHeaders.length - 2).fill(0);
+        const femaleCounts = new Array(tableHeaders.length - 2).fill(0);
+
+        for (const student of studentData) {
+            const gender = student[0];
+            for (let i = 2; i < student.length; i++) {
+                if (gender === "Male") {
+                    maleAverages[i - 2] += student[i];
+                    maleCounts[i - 2]++;
+                } else if (gender === "Female") {
+                    femaleAverages[i - 2] += student[i];
+                    femaleCounts[i - 2]++;
+                }
+            }
+        }
+        for (let i = 0; i < maleAverages.length; i++) {
+            if (maleCounts[i] > 0) {
+                maleAverages[i] /= maleCounts[i];
+            }
+            if (femaleCounts[i] > 0) {
+                femaleAverages[i] /= femaleCounts[i];
+            }
+        }  
+        const femaleBetterSubjects = [];
+        for (let i = 0; i < tableHeaders.length - 2; i++) {
+            if (femaleAverages[i] > maleAverages[i]) {
+                femaleBetterSubjects.push(tableHeaders[i + 2]);
+            }
+        } 
+        const subjectList = document.createElement("ul");
+        for (const subject of femaleBetterSubjects) {
+            const listItem = document.createElement("li");
+            listItem.textContent = subject;
+            subjectList.appendChild(listItem);
+        }       
+        resultTableDiv.innerHTML = "";
+        if (femaleBetterSubjects.length > 0) {
+            resultTableDiv.appendChild(subjectList);
+        } else {
+            resultTableDiv.textContent = "No subjects where female students perform better than male students.";
+        }
+    }
+   
+
+    function displayMaleSubjects() {
+        const resultTableDiv = document.getElementById("result-table");
+
+    
+        const maleAverages = new Array(tableHeaders.length - 2).fill(0);
+        const femaleAverages = new Array(tableHeaders.length - 2).fill(0);
+        const maleCounts = new Array(tableHeaders.length - 2).fill(0);
+        const femaleCounts = new Array(tableHeaders.length - 2).fill(0);
+
+        for (const student of studentData) {
+            const gender = student[0];
+            for (let i = 2; i < student.length; i++) {
+                if (gender === "Male") {
+                    maleAverages[i - 2] += student[i];
+                    maleCounts[i - 2]++;
+                } else if (gender === "Female") {
+                    femaleAverages[i - 2] += student[i];
+                    femaleCounts[i - 2]++;
+                }
+            }
+        }
+
+        for (let i = 0; i < maleAverages.length; i++) {
+            if (maleCounts[i] > 0) {
+                maleAverages[i] /= maleCounts[i];
+            }
+            if (femaleCounts[i] > 0) {
+                femaleAverages[i] /= femaleCounts[i];
+            }
+        }
+
+      
+        const maleBetterSubjects = [];
+        for (let i = 0; i < tableHeaders.length - 2; i++) {
+            if (maleAverages[i] > femaleAverages[i]) {
+                maleBetterSubjects.push(tableHeaders[i + 2]);
+            }
+        }
+
+       
+        const subjectList = document.createElement("ul");
+        for (const subject of maleBetterSubjects) {
+            const listItem = document.createElement("li");
+            listItem.textContent = subject;
+            subjectList.appendChild(listItem);
+        }
+
+       
+        resultTableDiv.innerHTML = "";
+        if (maleBetterSubjects.length > 0) {
+            resultTableDiv.appendChild(subjectList);
+        } else {
+            resultTableDiv.textContent = "No subjects where male students perform better than female students.";
+        }
+    }
+
+
+
+    </script>
+</body>
+</html>
